@@ -11,10 +11,15 @@ public class UserDao {
 
 	Connection c;
 	PreparedStatement ps;
+	ConnectionMaker connectionMaker;
+
+	public UserDao(ConnectionMaker connectionMaker) {
+		this.connectionMaker = connectionMaker;
+	}
 
 	public void add(User user) throws ClassNotFoundException, SQLException {
 
-		ConnectionMaker connectionMaker = new DConnectionMaker();
+		// ConnectionMaker connectionMaker = new DConnectionMaker(); 생성자로 주입받았기 때문에, 더이상 context코드에서 구현 클래스를 명시하지 않아도 됨.
 		c = connectionMaker.makeConnection();
 		ps = c.prepareStatement("insert into user values (?,?,?)");
 		ps.setString(1, user.getEmail());
@@ -28,8 +33,7 @@ public class UserDao {
 	}
 
 	public void deleteAll() throws ClassNotFoundException, SQLException {
-		
-		ConnectionMaker connectionMaker = new DConnectionMaker();
+		// ConnectionMaker connectionMaker = new DConnectionMaker(); 생성자로 주입받았기 때문에, 더이상 context코드에서 구현 클래스를 명시하지 않아도 됨.
 		c = connectionMaker.makeConnection();
 
 		ps = c.prepareStatement("delete from user");
