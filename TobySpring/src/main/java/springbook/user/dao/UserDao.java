@@ -13,6 +13,9 @@ public class UserDao {
 	PreparedStatement ps;
 	ConnectionMaker connectionMaker;
 
+	public UserDao() {
+	}
+	
 	public UserDao(ConnectionMaker connectionMaker) {
 		this.connectionMaker = connectionMaker;
 	}
