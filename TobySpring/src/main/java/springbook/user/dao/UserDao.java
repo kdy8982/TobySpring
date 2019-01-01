@@ -14,7 +14,8 @@ public class UserDao {
 
 	public void add(User user) throws ClassNotFoundException, SQLException {
 
-		c = getConnection();
+		ConnectionMaker connectionMaker = new DConnectionMaker();
+		c = connectionMaker.makeConnection();
 		ps = c.prepareStatement("insert into user values (?,?,?)");
 		ps.setString(1, user.getEmail());
 		ps.setString(2, user.getName());
@@ -27,18 +28,15 @@ public class UserDao {
 	}
 
 	public void deleteAll() throws ClassNotFoundException, SQLException {
-		c = getConnection();
+		
+		ConnectionMaker connectionMaker = new DConnectionMaker();
+		c = connectionMaker.makeConnection();
+
 		ps = c.prepareStatement("delete from user");
 		ps.execute();
 
 		ps.close();
 		c.close();
-	}
-
-	public Connection getConnection() throws ClassNotFoundException, SQLException {
-		Class.forName("com.mysql.jdbc.Driver");
-		c = DriverManager.getConnection("jdbc:mysql://localhost:3306/spring", "root", "1234");
-		return c;
 	}
 
 }
