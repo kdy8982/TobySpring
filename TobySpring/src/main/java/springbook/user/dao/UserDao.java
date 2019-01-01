@@ -11,10 +11,10 @@ public class UserDao {
 	
 	Connection c;
 	PreparedStatement ps;
-	private void add(User user) throws ClassNotFoundException, SQLException {
+	public void add(User user) throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
-		c = DriverManager.getConnection("");
-		ps = c.prepareStatement("insert into User (?,?,?)");
+		c = DriverManager.getConnection("jdbc:mysql://localhost:3306/spring", "root","1234");
+		ps = c.prepareStatement("insert into user values (?,?,?)");
 		ps.setString(1, user.getEmail());
 		ps.setString(2, user.getName());
 		ps.setString(3, user.getPassword());
@@ -25,9 +25,9 @@ public class UserDao {
 		
 	}
 	
-	private void deleteAll() throws ClassNotFoundException, SQLException {
+	public void deleteAll() throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
-		c = DriverManager.getConnection("");
+		c = DriverManager.getConnection("jdbc:mysql://localhost:3306/spring", "root","1234");
 		ps = c.prepareStatement("delete from user");
 		ps.execute();
 
