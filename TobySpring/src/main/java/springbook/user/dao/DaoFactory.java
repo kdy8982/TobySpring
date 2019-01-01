@@ -1,7 +1,9 @@
 package springbook.user.dao;
 
-public class DaoFactory {
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
+public class DaoFactory {
 	
 	public UserDao userDao() {
 		UserDao userDao = new UserDao();
