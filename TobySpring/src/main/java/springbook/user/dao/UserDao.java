@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import springbook.user.domain.User;
 
 public class UserDao {
@@ -12,18 +14,17 @@ public class UserDao {
 	Connection c = null;
 	PreparedStatement ps = null;
 	ConnectionMaker connectionMaker = null;
+	
+	private DataSource dataSource;
 
-	public UserDao() {
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 	
-	public UserDao(ConnectionMaker connectionMaker) {
-		this.connectionMaker = connectionMaker;
-	}
-
 	public void add(User user) throws ClassNotFoundException, SQLException {
 
 		try  {
-			c = connectionMaker.makeConnection();
+			c = dataSource.getConnection();
 			ps = c.prepareStatement("insert into user values (?,?,?)");
 			ps.setString(1, user.getEmail());
 			ps.setString(2, user.getName());
@@ -57,7 +58,7 @@ public class UserDao {
 
 	public void deleteAll() throws ClassNotFoundException, SQLException {
 		try {
-			c = connectionMaker.makeConnection();
+			c = dataSource.getConnection();
 
 			ps = c.prepareStatement("delete from user");
 			ps.execute();
@@ -83,5 +84,6 @@ public class UserDao {
 			}
 		}
 	}
+	
 
 }
