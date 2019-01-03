@@ -16,21 +16,14 @@ public class UserDao {
 	Connection c = null;
 	PreparedStatement ps = null;
 	ConnectionMaker connectionMaker = null;
-	
-	private DataSource dataSource;
-	
-	JdbcContext jdbcContext;
-	
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-	}
+	JdbcContext jdbcContext = null;
 	
 	public void setJdbcContext(JdbcContext jdbcContext) {
 		this.jdbcContext = jdbcContext;
 	}
 	
 	public void add(User user) throws SQLException {
-		jdbcContext(new JdbcStrategy() {
+		jdbcContext.workWithStatementStrategy(new JdbcStrategy() {
 			
 			@Override
 			public PreparedStatement makeStatement(Connection c) throws SQLException {
@@ -44,7 +37,7 @@ public class UserDao {
 	}
 
 	public void deleteAll() throws SQLException {
-		jdbcContext(new JdbcStrategy() {
+		jdbcContext.workWithStatementStrategy(new JdbcStrategy() {
 			
 			@Override
 			public PreparedStatement makeStatement(Connection c) throws SQLException {
@@ -54,32 +47,5 @@ public class UserDao {
 		});
 	}
 	
-	private void jdbcContext(JdbcStrategy callback) throws SQLException { // UserDao외에도 다른 Dao 클래스에서도 사용할 수 있도록, 외부 클래스의 메소드로 분리한다.
-		try {
-			c = dataSource.getConnection();
-			ps = callback.makeStatement(c);
-			ps.execute();
-		} 
-		catch (SQLException e) {
-			throw e;
-		}
-		finally {
-			if(ps!=null) {
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
-			}
-			
-			if(c != null) {
-				try {
-					c.close();
-				}
-				catch(SQLException e) {
-					throw e;
-				}
-			}
-		}
-	}
 	
 }

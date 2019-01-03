@@ -14,23 +14,25 @@ public class DaoFactory {
 		SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
 		
 		dataSource.setDriverClass(com.mysql.jdbc.Driver.class);
-		dataSource.setUrl("jdbc:mysql://localhost:3307/spring");
+		dataSource.setUrl("jdbc:mysql://localhost:3306/spring");
 		dataSource.setUsername("root");
 		dataSource.setPassword("1234");
 		
 		return dataSource;
 	}
-
-	@Bean
+	
+	@Bean 
 	public JdbcContext jdbcContext() {
+		JdbcContext jdbcContext = new JdbcContext();
+		jdbcContext.setDataSource(dataSource());
+		return jdbcContext;
 	}
 	
 	@Bean
 	public UserDao userDao() {
 		UserDao userDao = new UserDao();
-		userDao.setDataSource(dataSource());
+		userDao.setJdbcContext(jdbcContext());
 		return userDao;
 	}
-	
 	
 }
