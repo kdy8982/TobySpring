@@ -16,15 +16,14 @@ public class UserDao {
 	Connection c = null;
 	PreparedStatement ps = null;
 	ConnectionMaker connectionMaker = null;
+	JdbcContext jdbcContext = null;
 	
-	private DataSource dataSource;
-
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
+	public void setJdbcContext(JdbcContext jdbcContext) {
+		this.jdbcContext = jdbcContext;
 	}
 	
 	public void add(User user) throws SQLException {
-		jdbcContext(new JdbcStrategy() {
+		jdbcContext.workWithStatementStrategy(new JdbcStrategy() {
 			
 			@Override
 			public PreparedStatement makeStatement(Connection c) throws SQLException {
@@ -38,7 +37,7 @@ public class UserDao {
 	}
 
 	public void deleteAll() throws SQLException {
-		jdbcContext(new JdbcStrategy() {
+		jdbcContext.workWithStatementStrategy(new JdbcStrategy() {
 			
 			@Override
 			public PreparedStatement makeStatement(Connection c) throws SQLException {
@@ -48,32 +47,5 @@ public class UserDao {
 		});
 	}
 	
-	private void jdbcContext(JdbcStrategy callback) throws SQLException {
-		try {
-			c = dataSource.getConnection();
-			ps = callback.makeStatement(c);
-			ps.execute();
-		} 
-		catch (SQLException e) {
-			throw e;
-		}
-		finally {
-			if(ps!=null) {
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
-			}
-			
-			if(c != null) {
-				try {
-					c.close();
-				}
-				catch(SQLException e) {
-					throw e;
-				}
-			}
-		}
-	}
 	
 }
