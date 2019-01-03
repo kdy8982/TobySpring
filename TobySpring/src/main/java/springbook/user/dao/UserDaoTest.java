@@ -21,7 +21,7 @@ public class UserDaoTest {
 		userDao.deleteAll();
 		userDao.add(user);
 		userDao.deleteAll();
-		System.out.println("complete!");
+		System.out.println("complete!!");
 		
 	}
 }
