@@ -38,15 +38,14 @@ public class UserDao {
 	}
 
 	public void deleteAll() throws SQLException {
-		JdbcStrategy deleteStrategy = new JdbcStrategy() {
+		jdbcContext(new JdbcStrategy() {
 			
 			@Override
 			public PreparedStatement makeStatement(Connection c) throws SQLException {
-				return c.prepareStatement("delete from user");
+				ps = c.prepareStatement("delete from user");
+				return ps;
 			}
-		};
-		
-		jdbcContext(deleteStrategy);
+		});
 	}
 	
 	private void jdbcContext(JdbcStrategy callback) throws SQLException {
