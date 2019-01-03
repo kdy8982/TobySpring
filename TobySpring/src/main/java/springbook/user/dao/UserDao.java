@@ -52,18 +52,27 @@ public class UserDao {
 				}
 			}
 		}
-
-
 	}
 
-	public void deleteAll() throws ClassNotFoundException, SQLException {
+	public void deleteAll() throws SQLException {
+		JdbcStrategy deleteStrategy = new JdbcStrategy() {
+			
+			@Override
+			public PreparedStatement makeStatement(Connection c) throws SQLException {
+				return c.prepareStatement("delete from user");
+			}
+		};
+		
+		jdbcContext(deleteStrategy);
+	}
+	
+	private void jdbcContext(JdbcStrategy callback) throws SQLException {
 		try {
 			c = dataSource.getConnection();
-
-			ps = c.prepareStatement("delete from user");
+			ps = callback.makeStatement(c);
 			ps.execute();
 		} 
-		catch (Exception e) {
+		catch (SQLException e) {
 			throw e;
 		}
 		finally {
@@ -85,5 +94,4 @@ public class UserDao {
 		}
 	}
 	
-
 }
