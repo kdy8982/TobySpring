@@ -18,9 +18,15 @@ public class UserDao {
 	ConnectionMaker connectionMaker = null;
 	
 	private DataSource dataSource;
-
+	
+	JdbcContext jdbcContext;
+	
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
+	}
+	
+	public void setJdbcContext(JdbcContext jdbcContext) {
+		this.jdbcContext = jdbcContext;
 	}
 	
 	public void add(User user) throws SQLException {
@@ -48,7 +54,7 @@ public class UserDao {
 		});
 	}
 	
-	private void jdbcContext(JdbcStrategy callback) throws SQLException {
+	private void jdbcContext(JdbcStrategy callback) throws SQLException { // UserDao외에도 다른 Dao 클래스에서도 사용할 수 있도록, 외부 클래스의 메소드로 분리한다.
 		try {
 			c = dataSource.getConnection();
 			ps = callback.makeStatement(c);
