@@ -7,6 +7,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import springbook.user.domain.User;
 
 public class UserDao {
@@ -21,37 +23,18 @@ public class UserDao {
 		this.dataSource = dataSource;
 	}
 	
-	public void add(User user) throws ClassNotFoundException, SQLException {
-
-		try  {
-			c = dataSource.getConnection();
-			ps = c.prepareStatement("insert into user values (?,?,?)");
-			ps.setString(1, user.getEmail());
-			ps.setString(2, user.getName());
-			ps.setString(3, user.getPassword());
-			ps.execute();
+	public void add(User user) throws SQLException {
+		jdbcContext(new JdbcStrategy() {
 			
-		}
-		catch(Exception e) {
-			throw e;
-		}
-		finally {
-			if(ps!=null) {
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
+			@Override
+			public PreparedStatement makeStatement(Connection c) throws SQLException {
+				ps = c.prepareStatement("insert into user values (?,?,?)");
+				ps.setString(1, user.getEmail());
+				ps.setString(2, user.getName());
+				ps.setString(3, user.getPassword());
+				return ps;
 			}
-			
-			if(c != null) {
-				try {
-					c.close();
-				}
-				catch(SQLException e) {
-					throw e;
-				}
-			}
-		}
+		});
 	}
 
 	public void deleteAll() throws SQLException {
