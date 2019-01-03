@@ -14,7 +14,10 @@ public class CalcSumTest {
 		try {
 			Calculator calculator = new Calculator();
 			int sum = calculator.sum(getClass().getResource("/numbers.txt").getPath());
+			int multiple = calculator.multiple(getClass().getResource("/numbers.txt").getPath());
+			
 			assertThat(sum, is(10));
+			assertThat(multiple, is(24));
 		}
 		catch (Exception e) {
 			e.printStackTrace();
