@@ -8,50 +8,48 @@ public class Calculator {
 
 	public int sum(String filePath) throws IOException {
 
-		BufferedReaderCallback sumCallBack = new BufferedReaderCallback() {
-			
+		LineCallback sumCallback = new LineCallback() {
 			@Override
-			public int doSomethingWithReader(BufferedReader br) throws NumberFormatException, IOException {
-				String line = "";
-				int sum = 0;
-
-				while ((line = br.readLine()) != null) {
-					sum += Integer.valueOf(line);
-				}
-
-				return sum;
+			public int doSomthingWithLine(String line, int value) {
+				return value + Integer.valueOf(line);
 			}
 		}; 
 		
-		return fileReadTemplate(filePath, sumCallBack); // 템플릿 메소드 호출
+				return lineReadTemplate(filePath, sumCallback, 0); // 템플릿 메소드 호출
 	}
-	
-	public int multiple(String filePath) throws IOException {
 
-		BufferedReaderCallback multipleCallBack = new BufferedReaderCallback() {
+	public int multiple(String filePath) throws IOException {
+		
+		LineCallback multipleCallback = new LineCallback() {
 			
 			@Override
-			public int doSomethingWithReader(BufferedReader br) throws NumberFormatException, IOException {
-				String line = "";
-				int ret = 1;
-
-				while ((line = br.readLine()) != null) {
-					ret *= Integer.valueOf(line);
-				}
-
+			public int doSomthingWithLine(String line, int initVal) {
+				// TODO Auto-generated method stub
+				int ret = initVal *= Integer.valueOf(line); 
 				return ret;
 			}
-		}; 
+		};
 		
-		return fileReadTemplate(filePath, multipleCallBack); // 템플릿 메소드 호출
+		return lineReadTemplate(filePath, multipleCallback, 1);
 	}
-	
-	
-	public int fileReadTemplate(String filePath, BufferedReaderCallback callback) throws NumberFormatException, IOException {
-		
+
+	/* 가장 처음 만든 fileReaderTemplate */
+	public int fileReadTemplate(String filePath, BufferedReaderCallback callback)
+			throws NumberFormatException, IOException {
+
 		BufferedReader br = new BufferedReader(new FileReader(filePath));
 		int sum = callback.doSomethingWithReader(br);
 		return sum;
 	}
 
+	/* 두번째로 만든 템플릿 업그레이드 */
+	public int lineReadTemplate(String filePath, LineCallback callback, int initVal) throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(filePath));
+		int ret = initVal;
+		String line = null;
+		while ((line = br.readLine()) != null) {
+			ret = callback.doSomthingWithLine(line, ret);
+		}
+		return ret;
+	}
 }
