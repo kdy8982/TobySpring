@@ -2,11 +2,17 @@ package springbook.user.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 
 import springbook.user.domain.User;
 
@@ -23,15 +29,65 @@ public class UserDao {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
-	public void add(User user) throws SQLException {
-		
+	public void add(User user) {
 		this.jdbcTemplate.update("insert into user values (?,?,?)", user.getEmail(), user.getName(), user.getPassword());
 		
 	}
 
-	public void deleteAll() throws SQLException {
+	public void deleteAll() {
 		this.jdbcTemplate.update("delete from user");
 	}
-		
+	
+	public int getCount() {
+		return this.jdbcTemplate.query( new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+				return con.prepareStatement("select count(*) from user");
+				
+			}
+		}, new ResultSetExtractor<Integer>() {
+
+			@Override
+			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+				rs.next();
+				return rs.getInt(1);
+			}
+		});
+	}
+	
+	public User get(String id) {		
+		return this.jdbcTemplate.queryForObject("select * from user where id=?", new Object[] {id}, new RowMapper <User>() {
+
+			@Override
+			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+				// TODO Auto-generated method stub
+				User user = new User();
+				user.setEmail(rs.getString("id"));
+				user.setName(rs.getString("name"));
+				user.setPassword(rs.getString("password"));
+				return user;
+			}
+			
+		});
+	}
+	
+	public List<User> getAll() {
+			
+		return this.jdbcTemplate.query("select * from user order by id", new RowMapper<User>() {
+
+			@Override
+			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+				// TODO Auto-generated method stub
+				
+				User user = new User();
+				user.setEmail(rs.getString("id"));
+				user.setName(rs.getString("name"));
+				user.setPassword(rs.getString("password"));
+				
+				return user;
+			}
+			
+		});
+	}
 	
 }

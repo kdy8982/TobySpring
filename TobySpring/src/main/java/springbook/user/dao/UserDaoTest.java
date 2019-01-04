@@ -1,27 +1,69 @@
 package springbook.user.dao;
 
-import java.sql.SQLException;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import springbook.user.domain.User;
 
-public class UserDaoTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/applicationContext.xml")
 
-	public static void main(String[] args) throws Exception {
-		User user = new User("KimDaeYeon", "kdy8982@naver.com", "1234");
+public class UserDaoTest {
+	
+	@Autowired
+	private ApplicationContext applicationContext;
+	
+	private UserDao dao;
+	private User user1;
+	private User user2;
+	private User user3;
+	
+	
+	@Before
+	public void setUp() {
+//		ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
+//		dao = applicationContext.getBean("userDao",UserDao.class);
 		
-		// UserDao userDao = new UserDao(new DConnectionMaker()); // 클라이언트 단계에서 생성자로 어떠한 커넥션을 사용할지 주입해줌. 
-		// UserDao userDao = new DaoFactory().userDao(); // DaoFactory클래스를 분리하여 , userDao(new DConnectionMaker)를 주입해준다.
+		this.dao=this.applicationContext.getBean("userDao", UserDao.class);
 		
-		ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
-		UserDao userDao = applicationContext.getBean("userDao", UserDao.class);
-		
-		userDao.deleteAll();
-		userDao.add(user);
-		userDao.deleteAll();
-		System.out.println("complete!!");
-		
+		this.user1 = new User("김대연", "kdy8982@naver.com", "1234");
+		this.user2 = new User("스프링", "spring@naver.com", "1234");
+		this.user3 = new User("마이바티스", "mybatis@naver.com", "1234");
 	}
+	
+	@Test
+	public void add() throws SQLException {
+		dao.deleteAll();
+		dao.add(user1);
+		dao.add(user2);
+		dao.add(user3);
+		dao.getCount();
+		assertThat(dao.getCount(), is(3));
+	}
+	
+	@Test
+	public void getAllTest() throws SQLException {
+		dao.deleteAll();
+		dao.add(user1);
+		dao.add(user2);
+		dao.add(user3);
+		ArrayList<User> list = (ArrayList<User>) dao.getAll();
+		
+		assertThat(list.size(), is(3));
+			
+	}
+	
+	
 }
