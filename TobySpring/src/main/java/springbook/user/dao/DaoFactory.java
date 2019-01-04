@@ -14,7 +14,7 @@ public class DaoFactory {
 		SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
 		
 		dataSource.setDriverClass(com.mysql.jdbc.Driver.class);
-		dataSource.setUrl("jdbc:mysql://localhost:3306/spring");
+		dataSource.setUrl("jdbc:mysql://localhost:3307/spring");
 		dataSource.setUsername("root");
 		dataSource.setPassword("1234");
 		
@@ -31,7 +31,7 @@ public class DaoFactory {
 	@Bean
 	public UserDao userDao() {
 		UserDao userDao = new UserDao();
-		userDao.setJdbcContext(jdbcContext());
+		userDao.setDataSource(dataSource());
 		return userDao;
 	}
 	
