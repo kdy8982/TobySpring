@@ -5,6 +5,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
         <property name="java-output-path" value="/TobySpring/build/classes"/>
         <property name="context-root" value="TobySpring"/>
     </wb-module>
