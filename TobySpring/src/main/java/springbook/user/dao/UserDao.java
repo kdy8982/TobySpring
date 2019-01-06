@@ -73,14 +73,14 @@ public class UserDao {
 	
 	public List<User> getAll() {
 			
-		return this.jdbcTemplate.query("select * from user order by id", new RowMapper<User>() {
+		return this.jdbcTemplate.query("select * from user order by email", new RowMapper<User>() {
 
 			@Override
 			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
 				// TODO Auto-generated method stub
 				
 				User user = new User();
-				user.setEmail(rs.getString("id"));
+				user.setEmail(rs.getString("email"));
 				user.setName(rs.getString("name"));
 				user.setPassword(rs.getString("password"));
 				
