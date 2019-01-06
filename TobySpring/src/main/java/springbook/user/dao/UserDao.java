@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
+import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
 public class UserDao {
@@ -24,13 +25,32 @@ public class UserDao {
 	
 	private JdbcTemplate jdbcTemplate;
 	
+	private RowMapper<User> userMapper = new RowMapper<User>() {
+		
+		@Override
+		public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+			// TODO Auto-generated method stub
+			
+			User user = new User();
+			user.setEmail(rs.getString("email"));
+			user.setName(rs.getString("name"));
+			user.setPassword(rs.getString("password"));
+			user.setLevel(Level.valueOf(rs.getInt("level")));
+			user.setLogin(rs.getInt("login"));
+			user.setRecommend(rs.getInt("recommend"));
+
+			return user;
+		}
+	}; 
+	
+	
 
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
 	public void add(User user) {
-		this.jdbcTemplate.update("insert into user values (?,?,?)", user.getEmail(), user.getName(), user.getPassword());
+		this.jdbcTemplate.update("insert into user values (?,?,?,?,?,?)", user.getEmail(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
 		
 	}
 
@@ -56,38 +76,20 @@ public class UserDao {
 	}
 	
 	public User get(String id) {		
-		return this.jdbcTemplate.queryForObject("select * from user where id=?", new Object[] {id}, new RowMapper <User>() {
-
-			@Override
-			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-				// TODO Auto-generated method stub
-				User user = new User();
-				user.setEmail(rs.getString("id"));
-				user.setName(rs.getString("name"));
-				user.setPassword(rs.getString("password"));
-				return user;
-			}
-			
-		});
+		return this.jdbcTemplate.queryForObject("select * from user where email=?", new Object[] {id}, userMapper);
 	}
 	
 	public List<User> getAll() {
 			
-		return this.jdbcTemplate.query("select * from user order by email", new RowMapper<User>() {
+		return this.jdbcTemplate.query("select * from user order by email", userMapper);
+	}
 
-			@Override
-			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-				// TODO Auto-generated method stub
-				
-				User user = new User();
-				user.setEmail(rs.getString("email"));
-				user.setName(rs.getString("name"));
-				user.setPassword(rs.getString("password"));
-				
-				return user;
-			}
-			
-		});
+	public void update(User user) {
+		this.jdbcTemplate.update(
+				"update user set name = ?, password = ?, level = ?, login = ?, " + 
+				"recommend = ? where email = ?" , user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getEmail()
+				);
+		
 	}
 	
 }
