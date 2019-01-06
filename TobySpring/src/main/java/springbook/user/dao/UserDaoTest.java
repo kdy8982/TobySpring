@@ -66,4 +66,10 @@ public class UserDaoTest {
 	}
 	
 	
+	
+	@Test
+	public void dupilcateId() {
+		dao.add(user1);
+		dao.add(user1);
+	}
 }
