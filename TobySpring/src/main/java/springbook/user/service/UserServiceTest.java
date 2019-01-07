@@ -2,7 +2,7 @@ package springbook.user.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +20,7 @@ import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
-public class UserServiceTest {
+public class UserServiceTest extends UserService {
 
 	@Autowired
 	UserDao userDao;
@@ -85,5 +85,55 @@ public class UserServiceTest {
 		assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
 		assertThat(userWithoutLevelRead.getLevel(), is(userWithoutLevel.getLevel()));
 	}
+	
+	
+	static class TestUserService extends UserService {
+		private String email;
+		
+		private TestUserService(String email) {
+			this.email = email;
+		}
+		
+		@Override
+		protected void upgradeLevel(User user) {
+			if(user.getEmail().equals(this.email)) throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
+		
+	}
+	
+	static class TestUserServiceException extends RuntimeException {
+	}
+	
 
+	
+	private void checkLevelUpgrade(User user, Boolean upgraded) {
+		User userUpdate = userDao.get(user.getEmail());
+		
+		if(upgraded) {
+			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
+		} else {
+			assertThat(userUpdate.getLevel(), is(user.getLevel()));
+		}
+	}
+	
+	@Test
+	public void upgradeAllOrNothing() {
+		UserService testUserService = new TestUserService(users.get(3).getEmail());
+		testUserService.setUserDao(this.userDao);
+		
+		userDao.deleteAll();
+		for(User user : users) userDao.add(user);
+		
+		try {
+			testUserService.upgradeLevels();
+			fail("TestUserServiceException expected");
+		}
+		catch(TestUserServiceException e) {
+		}
+		
+		checkLevelUpgrade(users.get(1) , false);
+	}
+	
+	
 }
