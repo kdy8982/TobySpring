@@ -1,20 +1,19 @@
 package springbook.user.domain;
 
 public class User {
-	
+
 	String name;
 	String email;
 	String password;
-	
+
 	Level level;
 	int login;
 	int recommend;
-	
-	
-	public User () {
-		
+
+	public User() {
+
 	}
-	
+
 	public int getLogin() {
 		return login;
 	}
@@ -36,7 +35,7 @@ public class User {
 		this.email = email;
 		this.password = password;
 	}
-	
+
 	public User(String name, String email, String password, Level level, int login, int recommend) {
 		this.name = name;
 		this.email = email;
@@ -45,33 +44,46 @@ public class User {
 		this.login = login;
 		this.recommend = recommend;
 	}
-	
+
 	public Level getLevel() {
 		return level;
 	}
-	
-	public void setLevel(Level level)  {
+
+	public void setLevel(Level level) {
 		this.level = level;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getPassword() {
 		return password;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	public String getEmail() {
 		return email;
 	}
+
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	
-	
+
+	public void upgradeLevel() {
+		Level nextLevel = this.level.nextLevel();
+		if (nextLevel == null) {
+			throw new IllegalStateException(this.level + "은 업그레이드가 불가능합니다.");
+		} else {
+			this.level = nextLevel;
+		}
+	}
+
 }

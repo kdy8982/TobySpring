@@ -8,44 +8,30 @@ import springbook.user.domain.User;
 
 public class UserService {
 	UserDao userDao;
-	
+	UserLevelUpgradePolicy upgradePolicy; 
+
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
 	}
 	
-	public void upgradeLevels() {
-		List<User> users = userDao.getAll();
-		
-		for(User user : users) {
-			Boolean changed = null;
-			if(user.getLevel() == Level.BASIC && user.getLogin() >= 50) {
-				user.setLevel(Level.SILVER);
-				changed = true;
-			}
-			else if (user.getLevel() == Level.SILVER && user.getRecommend() >= 30) {
-				user.setLevel(Level.GOLD);
-				changed = true;
-			}
-			else if (user.getLevel() == Level.GOLD) {
-				changed = false;
-			}
-			else {
-				changed = false;
-			}
-			
-			if(changed) {
-				userDao.update(user);
-			}
-			
-		}
+	public void setUserLevelUpgradePolicy(UserLevelUpgradePolicy upgradePolicy) {
+		this.upgradePolicy = upgradePolicy;
 	}
 	
+	public void upgradeLevels() {
+		List<User> users = userDao.getAll();
+
+		for (User user : users) {
+			if (upgradePolicy.canUpgradeLevel(user)) {
+				upgradePolicy.upgradeLevel(user);
+			}
+		}
+	}
+
 	public void add(User user) {
-			
-		if(user.getLevel() == null) {
+		if (user.getLevel() == null) {
 			user.setLevel(Level.BASIC);
 		}
-		
 		userDao.add(user);
 	}
 }

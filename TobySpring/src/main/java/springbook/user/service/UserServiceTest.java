@@ -44,11 +44,11 @@ public class UserServiceTest {
 	public void isInjectUserServiceBean() {
 		assertThat(this.userService, is(notNullValue()));
 	}
-
 	
 	@Test
 	public void upgradeLevels() {
 		userDao.deleteAll();
+		
 		for(User user : users) {
 			userDao.add(user);
 		}
