@@ -29,8 +29,6 @@ public class UserDaoJdbc  implements UserDao {
 		
 		@Override
 		public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-			// TODO Auto-generated method stub
-			
 			User user = new User();
 			user.setEmail(rs.getString("email"));
 			user.setName(rs.getString("name"));
