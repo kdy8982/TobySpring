@@ -2,10 +2,13 @@ package springbook.user.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +27,9 @@ public class UserServiceTest extends UserService {
 
 	@Autowired
 	UserDao userDao;
+	
+	@Autowired
+	DataSource dataSource;
 	
 	@Autowired
 	UserService userService;
@@ -46,7 +52,8 @@ public class UserServiceTest extends UserService {
 	}
 	
 	@Test
-	public void upgradeLevels() {
+	public void upgradeLevels() throws Exception {
+		
 		userDao.deleteAll();
 		
 		for(User user : users) {
@@ -118,9 +125,10 @@ public class UserServiceTest extends UserService {
 	}
 	
 	@Test
-	public void upgradeAllOrNothing() {
+	public void upgradeAllOrNothing() throws Exception {
 		UserService testUserService = new TestUserService(users.get(3).getEmail());
 		testUserService.setUserDao(this.userDao);
+		testUserService.setDataSource(this.dataSource);
 		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
