@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -29,20 +30,21 @@ public class UserServiceTest extends UserService {
 	UserDao userDao;
 	
 	@Autowired
-	DataSource dataSource;
+	UserService userService;
 	
 	@Autowired
-	UserService userService;
-
+	PlatformTransactionManager transactionManager;
+	
+	
 	List<User> users;
 
 	@Before
 	public void setUp() {
-		users = Arrays.asList(new User("박범진", "bumjin@naver.com", "1234", Level.BASIC, 49, 0),
-				new User("강명성", "myunsung@naver.com", "1234", Level.BASIC, 50, 0),
-				new User("신승한", "erwins@naver.com", "1234", Level.SILVER, 60, 29),
-				new User("이상호", "shlee@naver.com", "1234", Level.SILVER, 60, 30),
-				new User("오민규", "mkoh@naver.com", "1234", Level.GOLD, 100, 100)
+		users = Arrays.asList(new User("pbj12", "박범진", "bumjin@naver.com", "12345", Level.BASIC, 49, 0),
+				new User("kms12", "강명성", "myunsung@naver.com", "12345", Level.BASIC, 50, 0),
+				new User("ssh12", "신승한", "erwins@naver.com", "12345", Level.SILVER, 60, 29),
+				new User("lsh12", "이상호", "shlee@naver.com", "12345", Level.SILVER, 60, 30),
+				new User("omk12", "오민규", "mkoh@naver.com", "12345", Level.GOLD, 100, 100)
 		);
 	}
 
@@ -70,7 +72,7 @@ public class UserServiceTest extends UserService {
 	}
 
 	private void checkLevel(User user, Level expectedLevel) {
-		User userUpdate = userDao.get(user.getEmail());
+		User userUpdate = userDao.get(user.getId());
 		assertThat(userUpdate.getLevel(), is(expectedLevel));
 	}
 	
@@ -86,8 +88,8 @@ public class UserServiceTest extends UserService {
 		userService.add(userWithLevel);
 		userService.add(userWithoutLevel);
 		
-		User userWithLevelRead = userDao.get(userWithLevel.getEmail());
-		User userWithoutLevelRead = userDao.get(userWithoutLevel.getEmail());
+		User userWithLevelRead = userDao.get(userWithLevel.getId());
+		User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
 		
 		assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
 		assertThat(userWithoutLevelRead.getLevel(), is(userWithoutLevel.getLevel()));
@@ -128,7 +130,7 @@ public class UserServiceTest extends UserService {
 	public void upgradeAllOrNothing() throws Exception {
 		UserService testUserService = new TestUserService(users.get(3).getEmail());
 		testUserService.setUserDao(this.userDao);
-		testUserService.setDataSource(this.dataSource);
+		testUserService.setTransactionManager(transactionManager);
 		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);

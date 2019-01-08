@@ -30,13 +30,14 @@ public class UserDaoJdbc  implements UserDao {
 		@Override
 		public User mapRow(ResultSet rs, int rowNum) throws SQLException {
 			User user = new User();
+			user.setId(rs.getString("id"));
 			user.setEmail(rs.getString("email"));
 			user.setName(rs.getString("name"));
 			user.setPassword(rs.getString("password"));
 			user.setLevel(Level.valueOf(rs.getInt("level")));
 			user.setLogin(rs.getInt("login"));
 			user.setRecommend(rs.getInt("recommend"));
-
+			
 			return user;
 		}
 	}; 
@@ -48,7 +49,7 @@ public class UserDaoJdbc  implements UserDao {
 	}
 	
 	public void add(User user) {
-		this.jdbcTemplate.update("insert into user values (?,?,?,?,?,?)", user.getEmail(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
+		this.jdbcTemplate.update("insert into user values (?,?,?,?,?,?,?)", user.getId(), user.getEmail(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
 		
 	}
 
@@ -74,18 +75,18 @@ public class UserDaoJdbc  implements UserDao {
 	}
 	
 	public User get(String id) {		
-		return this.jdbcTemplate.queryForObject("select * from user where email=?", new Object[] {id}, userMapper);
+		return this.jdbcTemplate.queryForObject("select * from user where id=?", new Object[] {id}, userMapper);
 	}
 	
 	public List<User> getAll() {
 			
-		return this.jdbcTemplate.query("select * from user order by email", userMapper);
+		return this.jdbcTemplate.query("select * from user order by id", userMapper);
 	}
 
 	public void update(User user) {
 		this.jdbcTemplate.update(
-				"update user set name = ?, password = ?, level = ?, login = ?, " + 
-				"recommend = ? where email = ?" , user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getEmail()
+				"update user set email = ?, name = ?, password = ?, level = ?, login = ?, " + 
+				"recommend = ? where id = ?" , user.getEmail(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId()
 				);
 		
 	}

@@ -2,6 +2,7 @@ package springbook.user.domain;
 
 public class User {
 
+	String id;
 	String name;
 	String email;
 	String password;
@@ -12,6 +13,14 @@ public class User {
 
 	public User() {
 
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public int getLogin() {
@@ -36,7 +45,8 @@ public class User {
 		this.password = password;
 	}
 
-	public User(String name, String email, String password, Level level, int login, int recommend) {
+	public User(String id, String name, String email, String password, Level level, int login, int recommend) {
+		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.password = password;

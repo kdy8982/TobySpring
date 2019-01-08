@@ -1,12 +1,14 @@
 package springbook.user.service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import springbook.user.dao.UserDao;
@@ -17,27 +19,29 @@ public class UserService {
 
 	UserDao userDao;
 	UserLevelUpgradePolicy upgradePolicy;
-
+	PlatformTransactionManager transactionManager;
 	private DataSource dataSource;
 
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-	}
 
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 
 	public void setUserLevelUpgradePolicy(UserLevelUpgradePolicy upgradePolicy) {
 		this.upgradePolicy = upgradePolicy;
 	}
 
+	public void setTransactionManager (PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
+	
 	protected void upgradeLevels() throws Exception {
-
-		TransactionSynchronizationManager.initSynchronization();
-		Connection c = DataSourceUtils.getConnection(dataSource);
-		c.setAutoCommit(false);
-
+		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+		
 		try {
 			List<User> users = userDao.getAll();
 
@@ -46,14 +50,13 @@ public class UserService {
 					upgradeLevel(user);
 				}
 			}
+			
+			this.transactionManager.commit(status);
+			
 		} catch (Exception e) {
-			c.rollback();
+			this.transactionManager.rollback(status);
 			throw e;
-		} finally {
-			DataSourceUtils.releaseConnection(c, dataSource);
-			TransactionSynchronizationManager.unbindResource(this.dataSource);
-			TransactionSynchronizationManager.clearSynchronization();
-		}
+		} 
 	}
 
 	public boolean canUpgradeLevel(User user) {
