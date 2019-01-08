@@ -49,7 +49,7 @@ public class UserDaoJdbc  implements UserDao {
 	}
 	
 	public void add(User user) {
-		this.jdbcTemplate.update("insert into user values (?,?,?,?,?,?,?)", user.getId(), user.getEmail(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
+		this.jdbcTemplate.update("insert into user(id, email, name, password, level, login, recommend) values (?,?,?,?,?,?,?)", user.getId(), user.getEmail(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
 		
 	}
 

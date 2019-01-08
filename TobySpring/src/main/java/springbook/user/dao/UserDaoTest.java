@@ -7,19 +7,22 @@ import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(locations="/applicationContext.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/test-applicationContext.xml")
 
 public class UserDaoTest {
 
-	private ApplicationContext applicationContext;
-
+	@Autowired
 	private UserDaoJdbc dao;
 	private User user1;
 	private User user2;
@@ -27,8 +30,8 @@ public class UserDaoTest {
 
 	@Before
 	public void setUp() {
-		ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
-		dao = applicationContext.getBean("userDao", UserDaoJdbc.class);
+		//ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
+		//dao = applicationContext.getBean("userDao", UserDaoJdbc.class);
 
 		this.user1 = new User("kdy12","김대연", "kdy8982@naver.com", "1234", Level.BASIC, 1, 0);
 		this.user2 = new User("spr12","스프링", "spring@naver.com", "1234", Level.SILVER, 55, 10);
@@ -68,10 +71,10 @@ public class UserDaoTest {
 
 	@Test
 	public void addAndGet() {
-		User userget1 = dao.get(user1.getEmail());
+		User userget1 = dao.get(user1.getId());
 		checkSameUser(userget1, user1);
 		
-		User userget2 = dao.get(user2.getEmail());
+		User userget2 = dao.get(user2.getId());
 		checkSameUser(userget2, user2);
 		
 	}
@@ -90,7 +93,7 @@ public class UserDaoTest {
 		user1.setRecommend(999);
 		dao.update(user1);
 		
-		User user1update = dao.get(user1.getEmail());
+		User user1update = dao.get(user1.getId());
 		checkSameUser(user1update, user1);
 	}
 	

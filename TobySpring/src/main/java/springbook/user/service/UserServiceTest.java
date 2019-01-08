@@ -97,15 +97,15 @@ public class UserServiceTest extends UserService {
 	
 	
 	static class TestUserService extends UserService {
-		private String email;
+		private String id;
 		
-		private TestUserService(String email) {
-			this.email = email;
+		private TestUserService(String id) {
+			this.id = id;
 		}
 		
 		@Override
 		protected void upgradeLevel(User user) {
-			if(user.getEmail().equals(this.email)) throw new TestUserServiceException();
+			if(user.getId().equals(this.id)) throw new TestUserServiceException();
 			super.upgradeLevel(user);
 		}
 		
@@ -117,7 +117,7 @@ public class UserServiceTest extends UserService {
 
 	
 	private void checkLevelUpgrade(User user, Boolean upgraded) {
-		User userUpdate = userDao.get(user.getEmail());
+		User userUpdate = userDao.get(user.getId());
 		
 		if(upgraded) {
 			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
@@ -128,7 +128,7 @@ public class UserServiceTest extends UserService {
 	
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
-		UserService testUserService = new TestUserService(users.get(3).getEmail());
+		UserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
 		testUserService.setTransactionManager(transactionManager);
 		
