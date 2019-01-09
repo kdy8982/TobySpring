@@ -30,13 +30,13 @@ import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
-public class UserServiceTest extends UserService {
+public class UserServiceImplTest extends UserServiceImpl {
 
 	@Autowired
 	UserDao userDao;
 	
 	@Autowired
-	UserService userService;
+	UserServiceImpl userService;
 	
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -63,7 +63,7 @@ public class UserServiceTest extends UserService {
 	
 	@Test
 	@DirtiesContext
-	public void upgradeLevels() throws Exception {
+	public void upgradeLevels() {
 		
 		userDao.deleteAll();
 		
@@ -114,7 +114,7 @@ public class UserServiceTest extends UserService {
 	}
 	
 	
-	static class TestUserService extends UserService {
+	static class TestUserService extends UserServiceImpl {
 		private String id;
 		
 		private TestUserService(String id) {
@@ -146,9 +146,8 @@ public class UserServiceTest extends UserService {
 	
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
-		UserService testUserService = new TestUserService(users.get(3).getId());
+		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
-		testUserService.setTransactionManager(transactionManager);
 		testUserService.setMailSender(mailSender);
 		
 		userDao.deleteAll();
