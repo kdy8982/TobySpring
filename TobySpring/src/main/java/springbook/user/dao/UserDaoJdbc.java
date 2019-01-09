@@ -79,7 +79,6 @@ public class UserDaoJdbc  implements UserDao {
 	}
 	
 	public List<User> getAll() {
-			
 		return this.jdbcTemplate.query("select * from user order by id", userMapper);
 	}
 

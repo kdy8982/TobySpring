@@ -40,7 +40,7 @@ public class UserServiceTest extends UserService {
 
 	@Before
 	public void setUp() {
-		users = Arrays.asList(new User("pbj12", "박범진", "bumjin@naver.com", "12345", Level.BASIC, 49, 0),
+		users = Arrays.asList(new User("kdy12", "김대연", "kdy892@naver.com", "12345", Level.BASIC, 49, 0),
 				new User("kms12", "강명성", "myunsung@naver.com", "12345", Level.BASIC, 50, 0),
 				new User("ssh12", "신승한", "erwins@naver.com", "12345", Level.SILVER, 60, 29),
 				new User("lsh12", "이상호", "shlee@naver.com", "12345", Level.SILVER, 60, 30),
