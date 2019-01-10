@@ -22,7 +22,7 @@ public class UserServiceTx implements UserService {
 	
 	@Override
 	public void add(User user) {
-		userService.add(user);
+		this.userService.add(user);
 	}
 
 	@Override
@@ -30,8 +30,7 @@ public class UserServiceTx implements UserService {
 		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 
 		try {
-			userService.upgradeLevels();
-			
+			this.userService.upgradeLevels();
 			this.transactionManager.commit(status);
 		}
 		catch(RuntimeException e) {

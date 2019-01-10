@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -34,142 +30,143 @@ public class UserServiceImplTest extends UserServiceImpl {
 
 	@Autowired
 	UserDao userDao;
-	
+
 	@Autowired
 	UserServiceImpl userService;
-	
+
 	@Autowired
 	PlatformTransactionManager transactionManager;
 
 	@Autowired
 	MailSender mailSender;
-	
+
 	List<User> users;
 
 	@Before
 	public void setUp() {
 		users = Arrays.asList(new User("kdy12", "김대연", "kdy892@naver.com", "12345", Level.BASIC, 49, 0),
-				new User("kms12", "강명성", "myunsung@naver.com", "12345", Level.BASIC, 50, 0),
+				new User("joytech", "강명성", "myunsung@naver.com", "12345", Level.BASIC, 50, 0),
 				new User("ssh12", "신승한", "erwins@naver.com", "12345", Level.SILVER, 60, 29),
-				new User("lsh12", "이상호", "shlee@naver.com", "12345", Level.SILVER, 60, 30),
-				new User("omk12", "오민규", "mkoh@naver.com", "12345", Level.GOLD, 100, 100)
-		);
+				new User("madnite1", "이상호", "shlee@naver.com", "12345", Level.SILVER, 60, 30),
+				new User("ommk12", "오민규", "mkoh@naver.com", "12345", Level.GOLD, 100, 100));
 	}
 
 	@Test
 	public void isInjectUserServiceBean() {
 		assertThat(this.userService, is(notNullValue()));
 	}
-	
+
 	@Test
-	@DirtiesContext
 	public void upgradeLevels() {
-		
-		userDao.deleteAll();
-		
-		for(User user : users) {
-			userDao.add(user);
-		}
-		
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
+
+		MockUserDao mockUserDao = new MockUserDao(this.users);
+		userServiceImpl.setUserDao(mockUserDao); // 목 오브젝트를 직접 DI해준다.
+
 		MockMailSender mockMailSender = new MockMailSender();
-		userService.setMailSender(mockMailSender);
-		
-		userService.upgradeLevels();
-		
-		checkLevel(users.get(0), Level.BASIC);
-		checkLevel(users.get(1), Level.SILVER);
-		checkLevel(users.get(2), Level.SILVER);
-		checkLevel(users.get(3), Level.GOLD);
-		checkLevel(users.get(4), Level.GOLD);
-		
+		userServiceImpl.setMailSender(mockMailSender);
+
+		userServiceImpl.upgradeLevels();
+
+		List<User> updated = mockUserDao.getUpdated();
+		assertThat(updated.size(), is(2));
+		checkUserAndLevel(updated.get(0), "joytech", Level.SILVER);
+		checkUserAndLevel(updated.get(1), "madnite1", Level.GOLD);
+
 		List<String> request = mockMailSender.getRequest();
 		assertThat(request.size(), is(2));
 		assertThat(request.get(0), is(users.get(1).getEmail()));
 		assertThat(request.get(1), is(users.get(3).getEmail()));
-		
+
+	}
+
+	private void checkUserAndLevel(User updated, String excpectId, Level expectLevel) {
+		assertThat(updated.getId(), is(excpectId));
+		assertThat(updated.getLevel(), is(expectLevel));
 	}
 
 	private void checkLevel(User user, Level expectedLevel) {
 		User userUpdate = userDao.get(user.getId());
 		assertThat(userUpdate.getLevel(), is(expectedLevel));
 	}
-	
+
 	@Test
 	public void add() {
 		userDao.deleteAll();
-		
+
 		User userWithLevel = users.get(4);
 		User userWithoutLevel = users.get(0);
-		
+
 		userWithoutLevel.setLevel(null);
-		
+
 		userService.add(userWithLevel);
 		userService.add(userWithoutLevel);
-		
+
 		User userWithLevelRead = userDao.get(userWithLevel.getId());
 		User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
-		
+
 		assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
 		assertThat(userWithoutLevelRead.getLevel(), is(userWithoutLevel.getLevel()));
 	}
-	
-	
-	static class TestUserService extends UserServiceImpl {
-		private String id;
-		
-		private TestUserService(String id) {
-			this.id = id;
-		}
-		
-		@Override
-		protected void upgradeLevel(User user) {
-			if(user.getId().equals(this.id)) throw new TestUserServiceException();
-			super.upgradeLevel(user);
-		}
-		
-	}
-	
+
 	static class TestUserServiceException extends RuntimeException {
 	}
-	
 
-	
 	private void checkLevelUpgrade(User user, Boolean upgraded) {
-		User userUpdate = userDao.get(user.getId());
-		
-		if(upgraded) {
+		User userUpdate = userDao.get(user.getId()); 
+
+		if (upgraded) {
 			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
 		} else {
 			assertThat(userUpdate.getLevel(), is(user.getLevel()));
 		}
 	}
-	
+
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
-		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());
-		testUserService.setUserDao(this.userDao);
-		testUserService.setMailSender(mailSender);
-		
-		userDao.deleteAll();
-		for(User user : users) userDao.add(user);
-		
+		UserServiceImpl testUserServiceImpl = new TestUserService(users.get(3).getId());
+		testUserServiceImpl.setUserDao(userDao); // 이 부분을 UserDao목을 사용하면 안될까?
+		testUserServiceImpl.setMailSender(mailSender);
+
+		UserServiceTx testUserServiceTx = new UserServiceTx();
+		testUserServiceTx.setTransactionManager(transactionManager);
+		testUserServiceTx.setUserService(testUserServiceImpl);
+
+		userDao.deleteAll(); // 일단 이부분은 단순히 유저 목록을 만들어주는 부분이라.. 목을 사용해도 되는 부분인데.. 
+		for (User user : users) 
+			userDao.add(user);  
+
 		try {
-			testUserService.upgradeLevels();
+			testUserServiceTx.upgradeLevels();
 			fail("TestUserServiceException expected");
+		} catch (TestUserServiceException e) {
 		}
-		catch(TestUserServiceException e) {
-		}
-		
-		checkLevelUpgrade(users.get(1) , false);
+		checkLevelUpgrade(users.get(1), false); 
 	}
-	
+
+	static class TestUserService extends UserServiceImpl {
+		private String id;
+
+		private TestUserService(String id) {
+			this.id = id;
+		}
+
+		@Override
+		protected void upgradeLevel(User user) {
+			if (user.getId().equals(this.id))
+				throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
+
+	}
+
 	static class MockMailSender implements MailSender {
 		private List<String> requests = new ArrayList<String>();
-		
+
 		public List<String> getRequest() {
 			return requests;
 		}
-		
+
 		@Override
 		public void send(SimpleMailMessage mailMessage) throws MailException {
 			requests.add(mailMessage.getTo()[0]);
@@ -177,9 +174,53 @@ public class UserServiceImplTest extends UserServiceImpl {
 
 		@Override
 		public void send(SimpleMailMessage... simpleMessages) throws MailException {
-			
+
 		}
-		
+
 	}
-	
+
+	static class MockUserDao implements UserDao {
+
+		private List<User> users;
+		private List<User> updated = new ArrayList();
+
+		private MockUserDao(List<User> users) {
+			this.users = users;
+		}
+
+		public List<User> getUpdated() {
+			return this.updated;
+		}
+
+		@Override
+		public void add(User user) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void deleteAll() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getCount() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public User get(String email) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<User> getAll() { // DB에서 유져 목록을 select하는 것과 동일한 역할을 하는 메서드. 
+			return this.users;
+		}
+
+		@Override
+		public void update(User user) { // DB로 update된 User Object의 목록을 테스트하기 위해  리턴해주는 메서드.   
+			updated.add(user);
+		}
+
+	}
 }
