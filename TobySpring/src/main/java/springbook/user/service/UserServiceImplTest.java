@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -128,16 +129,19 @@ public class UserServiceImplTest extends UserServiceImpl {
 		testUserServiceImpl.setUserDao(userDao); // 이 부분을 UserDao목을 사용하면 안될까?
 		testUserServiceImpl.setMailSender(mailSender);
 
-		UserServiceTx testUserServiceTx = new UserServiceTx();
-		testUserServiceTx.setTransactionManager(transactionManager);
-		testUserServiceTx.setUserService(testUserServiceImpl);
+		TransactionHandler txHandler = new TransactionHandler();
+		txHandler.setTarget(testUserServiceImpl);
+		txHandler.setTransactionManager(transactionManager);
+		txHandler.setPatter("upgradeLevels");
+		
+		UserService txUserService = (UserService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {UserService.class}, txHandler);
 
 		userDao.deleteAll(); // 일단 이부분은 단순히 유저 목록을 만들어주는 부분이라.. 목을 사용해도 되는 부분인데.. 
 		for (User user : users) 
 			userDao.add(user);  
 
 		try {
-			testUserServiceTx.upgradeLevels();
+			txUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
 		} catch (TestUserServiceException e) {
 		}
