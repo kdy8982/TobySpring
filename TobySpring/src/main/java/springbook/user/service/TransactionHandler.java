@@ -11,7 +11,7 @@ public class TransactionHandler implements InvocationHandler {
 
 	private Object target;
 	private PlatformTransactionManager transactionManager;
-	private String patter;
+	private String pattern;
 
 	public void setTarget(Object target) {
 		this.target = target;
@@ -21,14 +21,14 @@ public class TransactionHandler implements InvocationHandler {
 		this.transactionManager = transactionManager;
 	}
 
-	public void setPatter(String patter) {
-		this.patter = patter;
+	public void setPattern(String patter) {
+		this.pattern = patter;
 	}
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-		if (method.getName().startsWith(patter)) {
+		if (method.getName().startsWith(pattern)) {
 			return invokeInTransaction(method, args);
 		} else {
 			return method.invoke(target, args);

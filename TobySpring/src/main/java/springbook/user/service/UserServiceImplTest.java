@@ -58,7 +58,7 @@ public class UserServiceImplTest extends UserServiceImpl {
 	}
 
 	@Test
-	public void upgradeLevels() {
+	public void upgradeLevels() {  // 트랜잭션과 무관한 테스트(DB에까지 닿지 않는다). 
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
 
 		MockUserDao mockUserDao = new MockUserDao(this.users);
@@ -126,17 +126,17 @@ public class UserServiceImplTest extends UserServiceImpl {
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
 		UserServiceImpl testUserServiceImpl = new TestUserService(users.get(3).getId());
-		testUserServiceImpl.setUserDao(userDao); // 이 부분을 UserDao목을 사용하면 안될까?
+		testUserServiceImpl.setUserDao(userDao); 
 		testUserServiceImpl.setMailSender(mailSender);
 
 		TransactionHandler txHandler = new TransactionHandler();
 		txHandler.setTarget(testUserServiceImpl);
 		txHandler.setTransactionManager(transactionManager);
-		txHandler.setPatter("upgradeLevels");
+		txHandler.setPattern("upgradeLevels");
 		
 		UserService txUserService = (UserService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {UserService.class}, txHandler);
 
-		userDao.deleteAll(); // 일단 이부분은 단순히 유저 목록을 만들어주는 부분이라.. 목을 사용해도 되는 부분인데.. 
+		userDao.deleteAll(); 
 		for (User user : users) 
 			userDao.add(user);  
 
