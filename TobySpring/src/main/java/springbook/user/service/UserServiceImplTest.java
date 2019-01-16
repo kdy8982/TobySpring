@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,9 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -41,6 +42,9 @@ public class UserServiceImplTest extends UserServiceImpl {
 	@Autowired
 	MailSender mailSender;
 
+	@Autowired
+	ApplicationContext context;
+	
 	List<User> users;
 
 	@Before
@@ -119,23 +123,24 @@ public class UserServiceImplTest extends UserServiceImpl {
 		if (upgraded) {
 			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
 		} else {
+			System.out.println(userUpdate.getLevel() +", " + user.getLevel());
+			
 			assertThat(userUpdate.getLevel(), is(user.getLevel()));
 		}
 	}
 
 	@Test
+	@DirtiesContext
 	public void upgradeAllOrNothing() throws Exception {
 		UserServiceImpl testUserServiceImpl = new TestUserService(users.get(3).getId());
 		testUserServiceImpl.setUserDao(userDao); 
 		testUserServiceImpl.setMailSender(mailSender);
-
-		TransactionHandler txHandler = new TransactionHandler();
-		txHandler.setTarget(testUserServiceImpl);
-		txHandler.setTransactionManager(transactionManager);
-		txHandler.setPattern("upgradeLevels");
 		
-		UserService txUserService = (UserService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {UserService.class}, txHandler);
-
+		TxProxyFactoryBean txProxyFactoryBean = (TxProxyFactoryBean) context.getBean("&userService" , TxProxyFactoryBean.class); // Factory빈이 만들어주는 Object가 '아닌', 자체를 불러온다.
+		txProxyFactoryBean.setTarget(testUserServiceImpl); // 이번 test의 핵심이 되는 부분. 이 부분 때문에 @DirtiesContext를 붙였고, TxProxyFactoryBean을 새로 만들었다.
+		
+		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
+		
 		userDao.deleteAll(); 
 		for (User user : users) 
 			userDao.add(user);  

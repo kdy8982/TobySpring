@@ -1,4 +1,4 @@
-package springbook.learningtest.jdk;
+package springbook.learningtest.jdk.proxy;
 
 import static org.junit.Assert.assertThat;
 

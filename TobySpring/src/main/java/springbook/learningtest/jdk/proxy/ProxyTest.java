@@ -1,6 +1,10 @@
-package springbook.learningtest.jdk;
+package springbook.learningtest.jdk.proxy;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
+import org.springframework.aop.framework.ProxyFactoryBean;
+
 import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.Proxy;
@@ -32,7 +36,31 @@ public class ProxyTest {
 		assertThat(proxiedHello.sayHello("Toby"), is("HELLO TOBY"));
 		assertThat(proxiedHello.sayHi("Toby"), is("HI TOBY"));
 		assertThat(proxiedHello.sayThankyou("Toby"), is("THANK YOU TOBY"));
-		
 	}
+	
+	
+	/* 스프링이 제공하는  */
+	@Test
+	public void proxyFactoryBean() { 
+		ProxyFactoryBean pfBean = new ProxyFactoryBean();
+		pfBean.setTarget(new HelloTarget()); 
+		pfBean.addAdvice(new UppercaseAdvice());
+		
+		Hello proxiedHello = (Hello) pfBean.getObject();
+		
+		assertThat(proxiedHello.sayHello("Toby"), is("HELLO TOBY"));
+		assertThat(proxiedHello.sayHi("Toby"), is("HI TOBY"));
+		assertThat(proxiedHello.sayThankyou("Toby"), is("THANK YOU TOBY"));
+	}
+
+	static class UppercaseAdvice implements MethodInterceptor { 
+		
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+			String ret = (String) invocation.proceed();
+			return ret.toUpperCase();
+		}
+	}
+	
 }
 
