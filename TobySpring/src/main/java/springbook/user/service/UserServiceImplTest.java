@@ -5,13 +5,17 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -21,6 +25,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -44,7 +50,7 @@ public class UserServiceImplTest extends UserServiceImpl {
 
 	@Autowired
 	ApplicationContext context;
-	
+
 	List<User> users;
 
 	@Before
@@ -62,7 +68,7 @@ public class UserServiceImplTest extends UserServiceImpl {
 	}
 
 	@Test
-	public void upgradeLevels() {  // 트랜잭션과 무관한 테스트(DB에까지 닿지 않는다). 
+	public void upgradeLevels() { // 트랜잭션과 무관한 테스트(DB에까지 닿지 않는다). 
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
 
 		MockUserDao mockUserDao = new MockUserDao(this.users);
@@ -118,13 +124,13 @@ public class UserServiceImplTest extends UserServiceImpl {
 	}
 
 	private void checkLevelUpgrade(User user, Boolean upgraded) {
-		User userUpdate = userDao.get(user.getId()); 
+		User userUpdate = userDao.get(user.getId());
 
 		if (upgraded) {
 			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));
 		} else {
-			System.out.println(userUpdate.getLevel() +", " + user.getLevel());
-			
+			System.out.println(userUpdate.getLevel() + ", " + user.getLevel());
+
 			assertThat(userUpdate.getLevel(), is(user.getLevel()));
 		}
 	}
@@ -133,24 +139,53 @@ public class UserServiceImplTest extends UserServiceImpl {
 	@DirtiesContext
 	public void upgradeAllOrNothing() throws Exception {
 		UserServiceImpl testUserServiceImpl = new TestUserService(users.get(3).getId());
-		testUserServiceImpl.setUserDao(userDao); 
+		testUserServiceImpl.setUserDao(userDao);
 		testUserServiceImpl.setMailSender(mailSender);
 		
-		TxProxyFactoryBean txProxyFactoryBean = (TxProxyFactoryBean) context.getBean("&userService" , TxProxyFactoryBean.class); // Factory빈이 만들어주는 Object가 '아닌', 자체를 불러온다.
-		txProxyFactoryBean.setTarget(testUserServiceImpl); // 이번 test의 핵심이 되는 부분. 이 부분 때문에 @DirtiesContext를 붙였고, TxProxyFactoryBean을 새로 만들었다.
+		/*트랜잭션 프록시 팩토리 빈 테스트 부분 */
+		//		TxProxyFactoryBean txProxyFactoryBean = (TxProxyFactoryBean) context.getBean("&userService" , TxProxyFactoryBean.class); // Factory빈이 만들어주는 Object가 '아닌', 자체를 불러온다.
+		//		txProxyFactoryBean.setTarget(testUserServiceImpl); // 이번 test의 핵심이 되는 부분. 이 부분 때문에 @DirtiesContext를 붙였고, TxProxyFactoryBean을 새로 만들었다.
+		//		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
 		
-		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
-		
-		userDao.deleteAll(); 
-		for (User user : users) 
-			userDao.add(user);  
+		/*스프링을 이용한, 프록시 팩토리빈 테스트 부분*/
+		ProxyFactoryBean pfBean = new ProxyFactoryBean();
+		pfBean.setTarget(testUserServiceImpl);
+		pfBean.addAdvice(new TransactionAdvice(this.transactionManager));
+		UserService txUserService = (UserService) pfBean.getObject();
+
+		userDao.deleteAll();
+		for (User user : users)
+			userDao.add(user);
 
 		try {
 			txUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
 		} catch (TestUserServiceException e) {
 		}
-		checkLevelUpgrade(users.get(1), false); 
+		checkLevelUpgrade(users.get(1), false);
+	}
+
+	static class TransactionAdvice implements MethodInterceptor {
+
+		private PlatformTransactionManager transactionManager;
+
+		public TransactionAdvice(PlatformTransactionManager transactionManager) {
+			this.transactionManager = transactionManager;
+		}
+
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+			try {
+				Object ret = invocation.proceed();
+				this.transactionManager.commit(status);
+				return ret;
+			} catch (InvocationTargetException e) {
+				this.transactionManager.rollback(status);
+				throw e.getTargetException();
+			}
+		}
 	}
 
 	static class TestUserService extends UserServiceImpl {
@@ -232,4 +267,5 @@ public class UserServiceImplTest extends UserServiceImpl {
 		}
 
 	}
+	
 }

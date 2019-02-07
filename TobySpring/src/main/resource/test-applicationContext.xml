@@ -30,11 +30,38 @@
 		<property name="mailSender" ref="mailSender" />
 	</bean>
 	
-	<bean id="userService" class="springbook.user.service.TxProxyFactoryBean">
+	<!-- <bean id="userService" class="springbook.user.service.TxProxyFactoryBean">
 		<property name="target" ref="userServiceImpl" />
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="pattern" value="upgradeLevels" />
 		<property name="serviceInterface" value="springbook.user.service.UserService" />
+	</bean> -->
+	
+	
+	<!-- 스프링 제공 어드바이스(부가기능)  -->
+	<bean id="transactionAdvice" class="springbook.user.service.TransactionAdvice">
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+	
+	<!-- 스프링 제공 포인트컷(부가기능을 적용할 메서드를 선정) -->
+	<bean id="transactionPointcut" class="org.springfamework.aop.support.NameMatchMethodPointcut">
+		<property name="mappedName" value="upgrade*"/>
+	</bean>
+	
+	<!-- 위에 등록한 어드바이스와 포인트컷을 담아 어드바이저로 등록 -->
+	<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+		<property name="advice" ref="transactionAdvice" />
+		<property name="pointcut" ref="transactionPointcut" />
+	</bean>
+	
+	
+	<bean id="userService" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="target" ref="userServiceImpl"/>
+		<property name="interceptorNames"> <!-- 어드바이스와 어드바이저를 동시에 설정할 수 있는 프로퍼티 -->
+			<list>
+				<value>transactionAdvisor</value>
+			</list>
+		</property>
 	</bean>
 	
 </beans>

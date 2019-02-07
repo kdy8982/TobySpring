@@ -4,6 +4,8 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.aop.support.NameMatchMethodPointcut;
 
 import static org.junit.Assert.assertThat;
 
@@ -39,12 +41,12 @@ public class ProxyTest {
 	}
 	
 	
-	/* 스프링이 제공하는  */
+	/* 스프링이 제공하는 프록시팩토리빈 */
 	@Test
 	public void proxyFactoryBean() { 
 		ProxyFactoryBean pfBean = new ProxyFactoryBean();
-		pfBean.setTarget(new HelloTarget()); 
-		pfBean.addAdvice(new UppercaseAdvice());
+		pfBean.setTarget(new HelloTarget()); // 타겟과..
+		pfBean.addAdvice(new UppercaseAdvice()); // 어드바이스(부가기능)을 스프링이 제공하는, 프록시팩토리빈에 설정해준다.
 		
 		Hello proxiedHello = (Hello) pfBean.getObject();
 		
@@ -52,7 +54,28 @@ public class ProxyTest {
 		assertThat(proxiedHello.sayHi("Toby"), is("HI TOBY"));
 		assertThat(proxiedHello.sayThankyou("Toby"), is("THANK YOU TOBY"));
 	}
-
+	
+	@Test
+	public void pointcutAdvisor () {
+		
+		ProxyFactoryBean pfBean = new ProxyFactoryBean();
+		pfBean.setTarget(new HelloTarget());
+		
+		NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+		pointcut.setMappedName("sayH*");
+		
+		pfBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
+		
+		
+		Hello proxiedHello = (Hello)pfBean.getObject();
+		
+		assertThat(proxiedHello.sayHello("Toby"), is("HELLO TOBY"));
+		assertThat(proxiedHello.sayHi("Toby"), is("HI TOBY"));
+		// assertThat(proxiedHello.sayThankyou("Toby"), is("THANK YOU TOBY"));  // 포인트컷에 "sayH*" 만 추가했기 때문에, sayThankyou 메서드 테스트는 실패한다.
+		
+		
+	}
+	
 	static class UppercaseAdvice implements MethodInterceptor { 
 		
 		@Override
