@@ -34,13 +34,10 @@ import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
-public class UserServiceImplTest extends UserServiceImpl {
+public class UserServiceTest extends UserServiceImpl {
 
 	@Autowired
 	UserDao userDao;
-
-	@Autowired
-	UserServiceImpl userService;
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -50,6 +47,12 @@ public class UserServiceImplTest extends UserServiceImpl {
 
 	@Autowired
 	ApplicationContext context;
+
+	@Autowired
+	UserService userService;
+
+	@Autowired
+	UserService testUserService;
 
 	List<User> users;
 
@@ -138,27 +141,27 @@ public class UserServiceImplTest extends UserServiceImpl {
 	@Test
 	@DirtiesContext
 	public void upgradeAllOrNothing() throws Exception {
-		UserServiceImpl testUserServiceImpl = new TestUserService(users.get(3).getId());
-		testUserServiceImpl.setUserDao(userDao);
-		testUserServiceImpl.setMailSender(mailSender);
-		
-		/*트랜잭션 프록시 팩토리 빈 테스트 부분 */
+		//		UserServiceImpl testUserServiceImpl = new TestUserServiceImpl();
+		//		testUserServiceImpl.setUserDao(userDao);
+		//		testUserServiceImpl.setMailSender(mailSender);
+
+		/* 트랜잭션 프록시 팩토리 빈 테스트 부분 */
 		//		TxProxyFactoryBean txProxyFactoryBean = (TxProxyFactoryBean) context.getBean("&userService" , TxProxyFactoryBean.class); // Factory빈이 만들어주는 Object가 '아닌', 자체를 불러온다.
 		//		txProxyFactoryBean.setTarget(testUserServiceImpl); // 이번 test의 핵심이 되는 부분. 이 부분 때문에 @DirtiesContext를 붙였고, TxProxyFactoryBean을 새로 만들었다.
 		//		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
-		
-		/*스프링을 이용한, 프록시 팩토리빈 테스트 부분*/
-		ProxyFactoryBean pfBean = new ProxyFactoryBean();
-		pfBean.setTarget(testUserServiceImpl);
-		pfBean.addAdvice(new TransactionAdvice(this.transactionManager));
-		UserService txUserService = (UserService) pfBean.getObject();
+
+		/* 스프링을 이용한, 프록시 팩토리빈 테스트 부분 */
+		//		ProxyFactoryBean pfBean = new ProxyFactoryBean();
+		//		pfBean.setTarget(testUserServiceImpl); // 트랜잭션 에러가 나는 테스트용 UserServiceImpl로 바꿔치기.
+		//		pfBean.addAdvice(new TransactionAdvice(this.transactionManager));
+		//		UserService txUserService = (UserService) pfBean.getObject();
 
 		userDao.deleteAll();
 		for (User user : users)
 			userDao.add(user);
 
 		try {
-			txUserService.upgradeLevels();
+			testUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
 		} catch (TestUserServiceException e) {
 		}
@@ -188,12 +191,8 @@ public class UserServiceImplTest extends UserServiceImpl {
 		}
 	}
 
-	static class TestUserService extends UserServiceImpl {
-		private String id;
-
-		private TestUserService(String id) {
-			this.id = id;
-		}
+	static class TestUserServiceImpl extends UserServiceImpl {
+		private String id = "madnite1";
 
 		@Override
 		protected void upgradeLevel(User user) {
@@ -267,5 +266,5 @@ public class UserServiceImplTest extends UserServiceImpl {
 		}
 
 	}
-	
+
 }

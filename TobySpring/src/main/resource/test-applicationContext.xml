@@ -43,10 +43,19 @@
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	
-	<!-- 스프링 제공 포인트컷(부가기능을 적용할 메서드를 선정) -->
-	<bean id="transactionPointcut" class="org.springfamework.aop.support.NameMatchMethodPointcut">
+	<!-- 스프링 제공 포인트컷(부가기능을 적용할 '메서드만'을 선정) -->
+	<!-- 
+	<bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
 		<property name="mappedName" value="upgrade*"/>
 	</bean>
+	--> 
+
+	<!-- 스프링 제공 포인트컷(부가기능을 적용할 '클래스'와 '메서드' 모두 선정) -->
+	<bean id="transactionPointcut" class="springbook.user.service.NameMatchClassMethodPointcut">
+		<property name="mappedClassName" value="*ServiceImpl"></property>
+		<property name="mappedName" value="upgrade*"></property>
+	</bean>
+	
 	
 	<!-- 위에 등록한 어드바이스와 포인트컷을 담아 어드바이저로 등록 -->
 	<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
@@ -54,14 +63,27 @@
 		<property name="pointcut" ref="transactionPointcut" />
 	</bean>
 	
-	
+	<!-- '어드바이저를 이용한 자동프록시생성기' Bean을 등록한 이후로, 더이상 어드바이저를 명시적으로 등록하지 않음 -->
+	<!-- 
 	<bean id="userService" class="org.springframework.aop.framework.ProxyFactoryBean">
 		<property name="target" ref="userServiceImpl"/>
-		<property name="interceptorNames"> <!-- 어드바이스와 어드바이저를 동시에 설정할 수 있는 프로퍼티 -->
+		<property name="interceptorNames"> 어드바이스와 어드바이저를 동시에 설정할 수 있는 프로퍼티
 			<list>
 				<value>transactionAdvisor</value>
 			</list>
 		</property>
+	</bean> 
+	-->
+	 
+	<!-- '어드바이저를 이용한 자동프록시생성기' : 등록된 빈 들중 Advisor를 구현한 것들을 찾아, 포인트컷을  지정해보면서 자동으로 프록시를 만들어, 바꿔치기 해줌 -->
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
+
+	<bean id="userService" class="springbook.user.service.UserServiceImpl">
+		<property name="userDao" ref="userDao" />
+		<property name="mailSender" ref="mailSender" />
 	</bean>
+
+	<!-- '어드바이저를 이용한 자동프록시생성기'를 테스트해보기 위해, 임시로 만든 ServiceImpl 빈(트랜잭션 에러를 일부러 냄) --> 	
+	<bean id="testUserService" class="springbook.user.service.UserServiceTest$TestUserServiceImpl" parent="userService" />
 	
 </beans>
