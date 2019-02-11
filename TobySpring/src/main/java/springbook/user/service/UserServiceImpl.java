@@ -64,7 +64,6 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private void sendUpgradeMail(User user) {
-
 		SimpleMailMessage mailMessage = new SimpleMailMessage();
 		mailMessage.setTo(user.getEmail());
 		mailMessage.setFrom("userdomain@ksug.org");
@@ -72,7 +71,6 @@ public class UserServiceImpl implements UserService {
 		mailMessage.setText("사용자님의 등급이  " + user.getLevel().name());
 
 		this.mailSender.send(mailMessage);
-
 	}
 
 	public void add(User user) {
