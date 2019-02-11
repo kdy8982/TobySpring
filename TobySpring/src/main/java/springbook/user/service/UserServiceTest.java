@@ -266,5 +266,10 @@ public class UserServiceTest extends UserServiceImpl {
 		}
 
 	}
+	
+	@Test
+	public void advisorAutoProxyCreator (){
+		assertThat(testUserService, is (java.lang.reflect.Proxy.class));
+	}
 
 }
