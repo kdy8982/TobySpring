@@ -32,6 +32,22 @@ import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+/**
+ * @author USER
+ *
+ */
+/**
+ * @author USER
+ *
+ */
+/**
+ * @author USER
+ *
+ */
+/**
+ * @author USER
+ *
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
 public class UserServiceTest extends UserServiceImpl {
@@ -167,7 +183,23 @@ public class UserServiceTest extends UserServiceImpl {
 		}
 		checkLevelUpgrade(users.get(1), false);
 	}
+	
+	
+	
+	/**
+	 * 트랜잭션 포인트컷 테스트 메서드.
+	 * get으로 시작하는 메서드에 ReadOnly를 설정하고, 정말 update하면 exception이 발생하는지 테스트.  
+	 */
+	@Test(expected=org.springframework.dao.TransientDataAccessResourceException.class)
+	public void readOnlyTransactionAttribute () {
+		testUserService.getAll();
+	}
 
+	
+	/**
+	 * @author 김대연
+	 * Transaction Advice이다.
+	 */
 	static class TransactionAdvice implements MethodInterceptor {
 
 		private PlatformTransactionManager transactionManager;
@@ -191,6 +223,11 @@ public class UserServiceTest extends UserServiceImpl {
 		}
 	}
 
+	
+	/**
+	 * @author USER
+	 *	단순 Junit 테스트용 내부 스태틱 클래스.
+	 */
 	static class TestUserService extends UserServiceImpl {
 		private String id = "madnite1";
 
@@ -200,7 +237,15 @@ public class UserServiceTest extends UserServiceImpl {
 				throw new TestUserServiceException();
 			super.upgradeLevel(user);
 		}
-
+		
+		@Override
+		public List<User> getAll() {
+			// TODO Auto-generated method stub
+			for(User user : super.getAll()) {
+				super.update(user);
+			}
+			return null;
+		}
 	}
 
 	static class MockMailSender implements MailSender {
@@ -219,7 +264,6 @@ public class UserServiceTest extends UserServiceImpl {
 		public void send(SimpleMailMessage... simpleMessages) throws MailException {
 
 		}
-
 	}
 
 	static class MockUserDao implements UserDao {
@@ -266,10 +310,4 @@ public class UserServiceTest extends UserServiceImpl {
 		}
 
 	}
-	/*
-	@Test
-	public void advisorAutoProxyCreator (){
-		assertThat(testUserService, is (java.lang.reflect.Proxy.class));
-	}
-*/
 }

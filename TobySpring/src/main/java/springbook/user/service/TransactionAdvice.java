@@ -17,7 +17,7 @@ public class TransactionAdvice implements MethodInterceptor {
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		
-		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
+		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition()); // 트랜잭션 전파 수준 ; 이미 존재하고 있는 트랜잭션이 있다면, 해당 트랜잭션으로 붙는다.
 		
 		try {
 			Object ret = invocation.proceed();
