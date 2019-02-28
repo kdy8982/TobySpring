@@ -32,22 +32,6 @@ import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
-/**
- * @author USER
- *
- */
-/**
- * @author USER
- *
- */
-/**
- * @author USER
- *
- */
-/**
- * @author USER
- *
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
 public class UserServiceTest extends UserServiceImpl {
