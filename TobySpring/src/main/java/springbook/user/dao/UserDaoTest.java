@@ -40,16 +40,16 @@ public class UserDaoTest {
 		//ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
 		//dao = applicationContext.getBean("userDao", UserDaoJdbc.class);
 
-		this.user1 = new User("kdy12","김대연", "kdy8982@naver.com", "1234", Level.BASIC, 1, 0);
-		this.user2 = new User("spr12","스프링", "spring@naver.com", "1234", Level.SILVER, 55, 10);
-		this.user3 = new User("myb12", "마이바티스", "mybatis@naver.com", "1234", Level.GOLD, 100, 40);
+		this.user1 = new User("kdy12","kdy", "kdy8982@naver.com", "1234", Level.BASIC, 1, 0);
+		this.user2 = new User("spr12","spring", "spring@naver.com", "1234", Level.SILVER, 55, 10);
+		this.user3 = new User("myb12", "mybatis", "mybatis@naver.com", "1234", Level.GOLD, 100, 40);
 	}
 	
 	@Test
 	public void checkSetupUser(){
-		assertThat(this.user1.getName(), is("김대연"));
-		assertThat(this.user2.getName(), is("스프링"));
-		assertThat(this.user3.getName(), is("마이바티스"));
+		assertThat(this.user1.getName(), is("kdy"));
+		assertThat(this.user2.getName(), is("spring"));
+		assertThat(this.user3.getName(), is("mybatis"));
 	}
 	
 	@Test
@@ -91,6 +91,7 @@ public class UserDaoTest {
 		dao.add(user3);
 		
 		User userget1 = dao.get(user1.getId());
+		System.out.println(userget1.getEmail());
 		checkSameUser(userget1, user1);
 		
 		
