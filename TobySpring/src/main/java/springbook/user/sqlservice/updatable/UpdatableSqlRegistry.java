@@ -1,4 +1,4 @@
-package springbook.issuetracker.sqlservice;
+package springbook.user.sqlservice.updatable;
 
 import java.util.Map;
 
