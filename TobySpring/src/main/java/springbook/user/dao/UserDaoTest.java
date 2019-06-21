@@ -1,6 +1,7 @@
 package springbook.user.dao;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
@@ -11,18 +12,15 @@ import javax.sql.DataSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import springbook.TestApplicationContext;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes=TestApplicationContext.class)
+@ContextConfiguration(locations="/test-applicationContext.xml")
 
 public class UserDaoTest {
 
@@ -44,6 +42,11 @@ public class UserDaoTest {
 		this.user1 = new User("kdy12","kdy", "kdy8982@naver.com", "1234", Level.BASIC, 1, 0);
 		this.user2 = new User("spr12","spring", "spring@naver.com", "1234", Level.SILVER, 55, 10);
 		this.user3 = new User("myb12", "mybatis", "mybatis@naver.com", "1234", Level.GOLD, 100, 40);
+	}
+	
+	@Test
+	public void checkInject() {
+		assertThat(dao, is(notNullValue()));
 	}
 	
 	@Test
